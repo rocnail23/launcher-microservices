@@ -1,0 +1,9 @@
+[submodule "gateway"]
+	path = gateway
+	url = git@github.com:rocnail23/gateway_ecommerce.git
+[submodule "products"]
+	path = products
+	url = git@github.com:rocnail23/product_microservices.git
+[submodule "orders"]
+	path = orders
+	url = git@github.com:rocnail23/order_microservice.git
