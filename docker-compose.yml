@@ -1,0 +1,63 @@
+services:
+
+    nats:
+      image: nats:latest
+      ports:
+        - "8222:8222"
+
+    gateway:
+      build: ./gateway
+      volumes:
+        - ./gateway/src:/home/node/app/src
+      ports:
+        - "${GATEWAY_PORT:-3000}:3000"
+      command: "npm run start:dev"
+      environment:
+        - PORT=${GATEWAY_PORT:-3000}
+        - NATS_SERVER=${NATS_SERVER}
+
+    product_microservice:
+      depends_on:
+        - nats
+      build: ./products
+      volumes:
+        - ./products/src:/home/node/app/src
+      command: "npm run start:dev"
+      ports:
+        - "${PRODUCT_PORT:-3001}:3001"
+      environment:
+        - PORT=${PRODUCT_PORT:-3001}
+        - DATABASE_URL=${PRODUCT_DATABASE_URL}
+        - DATABASE_URL_FOR_MODULE=${PRODUCT_DATABASE_URL_FOR_MODULE}
+        - NATS_SERVER=${NATS_SERVER}
+
+    postgres:
+      image: postgres:15.2-alpine
+      restart: always
+      environment:
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        POSTGRES_DB: ${POSTGRES_DB}
+      ports:
+        - 5432:5432
+      volumes:
+        - ./postgres-data:/var/lib/postgresql/data    
+
+    order_microservice:
+      depends_on:
+        - postgres
+      build: ./orders
+      volumes:
+        - ./orders/src:/home/node/app/src
+      command: "npm run start:dev"
+      ports:
+        - "${ORDER_PORT:-3002}:3002"  
+      environment:
+        - PORT=${ORDER_PORT:-3002}
+        - DATABASE_URL=${ORDER_DATABASE_URL}
+        - NATS_SERVER=${NATS_SERVER}
+
+
+        
+
+  
